@@ -877,7 +877,6 @@ export const fromDatabase = async (
 	const namedCheckPattern = /CONSTRAINT\s*["']?(\w+)["']?\s*CHECK\s*\((.*?)\)/gi;
 	const unnamedCheckPattern = /CHECK\s*\((.*?)\)/gi;
 	let checkCounter = 0;
-	const checkConstraints: Record<string, CheckConstraint> = {};
 	const checks = await db.query<{
 		tableName: string;
 		sql: string;
@@ -891,6 +890,7 @@ export const fromDatabase = async (
 		if (!tablesFilter(check.tableName)) continue;
 
 		const { tableName, sql } = check;
+		const checkConstraints: Record<string, CheckConstraint> = {};
 
 		// Find named CHECK constraints
 		let namedChecks = [...sql.matchAll(namedCheckPattern)];

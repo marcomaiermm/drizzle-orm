@@ -1439,6 +1439,33 @@ test('db has checks. Push with same names', async () => {
 	expect(tablesToTruncate!.length).toBe(0);
 });
 
+test('checks of other tables are not introspected into a table', async () => {
+	const client = new Database(':memory:');
+
+	const schema = {
+		users: sqliteTable('users', {
+			id: integer('id'),
+			age: integer('age'),
+		}, (table) => ({
+			ageCheck: check('users_age_check', sql`${table.age} > 21`),
+		})),
+		posts: sqliteTable('posts', {
+			id: integer('id'),
+			title: text('title'),
+		}, (table) => ({
+			titleCheck: check('posts_title_check', sql`${table.title} <> ''`),
+		})),
+		tags: sqliteTable('tags', {
+			id: integer('id'),
+		}),
+	};
+
+	const { sqlStatements, statements } = await diffTestSchemasPushSqlite(client, schema, schema, [], false);
+
+	expect(statements).toStrictEqual([]);
+	expect(sqlStatements).toStrictEqual([]);
+});
+
 test('create view', async () => {
 	const client = new Database(':memory:');
 
